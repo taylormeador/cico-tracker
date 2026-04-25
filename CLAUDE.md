@@ -9,7 +9,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Running Locally
 
 ```bash
-cp .env.example .env        # fill in DB_PASSWORD and JWT_SECRET
 docker compose up --build
 ```
 
@@ -21,6 +20,16 @@ cd frontend
 pip install -r requirements.txt
 streamlit run app.py
 ```
+
+## Environment
+
+Each service has its own `.env` file — do not use a root-level `.env`.
+
+```
+backend/.env    DATABASE_URL, JWT_SECRET
+```
+
+`backend/.env` is loaded via `env_file` in `docker-compose.yml` and passed directly into the container. The Postgres DB runs on a separate VM at `10.0.10.121:5432`.
 
 ## Linting
 
@@ -43,9 +52,14 @@ frontend/        Streamlit multipage app
     3_Chronicle_of_Poor_Decisions.py  Daily timeline
 
 backend/         Rust REST API (owner writes this)
-  Dockerfile     Multi-stage Rust build
+  src/main.rs    Axum server entry point
+  Cargo.toml     axum, sqlx (postgres + chrono), tokio, chrono, dotenvy
+  Dockerfile     Multi-stage build using rust:1.95-slim
 
-docker-compose.yml   frontend + backend + postgres:16-alpine
+db/
+  ddls.py        Postgres DDL statements for all tables
+
+docker-compose.yml   frontend + backend (no DB service — DB is external)
 ```
 
 **Auth flow:** Rust API issues JWTs on login/register. Streamlit stores the token in `st.session_state["token"]` and sends it as `Authorization: Bearer <token>` on every API call. `user_id` is resolved server-side from the JWT. Each page checks `st.session_state.get("token")` and calls `st.switch_page("app.py")` if missing.
@@ -53,12 +67,13 @@ docker-compose.yml   frontend + backend + postgres:16-alpine
 ## Database Schema
 
 ```
-weight_log:   id, user_id, weight (float, lbs), timestamp
+users:        id, email, password_hash, created_at
+weight_log:   id, user_id, weight (numeric lbs), timestamp
 food_log:     id, user_id, description, calories, carb_grams, protein_grams, fat_grams, timestamp
-exercise_log: id, user_id, description, calories_burned, duration_minutes, timestamp
+exercise_log: id, user_id, description, calories, duration_minutes, timestamp
 ```
 
-Future table (not yet built): `notes` — timestamped free-text for correlating feelings/events with health data. Intended for eventual pattern analysis ("you were tired on rides when you ate <X carbs beforehand").
+DDL for all tables is in `db/ddls.py`. Run them manually against the `cico` database before first use.
 
 ## Expected API Endpoints
 
