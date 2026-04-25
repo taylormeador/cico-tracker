@@ -8,7 +8,7 @@ st.set_page_config(page_title="Log Your Crimes â€” FATASS TRACKER", page_icon="ð
 inject_css()
 
 if not st.session_state.get("token"):
-    st.switch_page("app.py")
+    st.switch_page("Home.py")
 
 sidebar_nav()
 

@@ -10,7 +10,7 @@ st.set_page_config(
 inject_css()
 
 if not st.session_state.get("token"):
-    st.switch_page("app.py")
+    st.switch_page("Home.py")
 
 sidebar_nav()
 

@@ -6,7 +6,7 @@ st.set_page_config(page_title="The Evidence — FATASS TRACKER", page_icon="📊
 inject_css()
 
 if not st.session_state.get("token"):
-    st.switch_page("app.py")
+    st.switch_page("Home.py")
 
 sidebar_nav()
 

@@ -32,6 +32,8 @@ h3 {
     letter-spacing: 1px !important;
 }
 
+section[data-testid="stSidebarNav"] { display: none !important; }
+
 section[data-testid="stSidebar"] {
     background-color: #050200 !important;
     border-right: 3px solid #FFD700 !important;
@@ -256,6 +258,10 @@ def sidebar_nav():
     with st.sidebar:
         st.markdown("## 🍔 FATASS TRACKER")
         gold_divider()
+        st.page_link("pages/1_Log_Your_Crimes.py", label="Log Your Crimes", icon="☠️")
+        st.page_link("pages/2_The_Evidence.py",    label="The Evidence",    icon="📊")
+        st.page_link("pages/3_Chronicle_of_Poor_Decisions.py", label="Chronicle of Poor Decisions", icon="💀")
+        gold_divider()
         if "email" in st.session_state:
             st.markdown(
                 f"<div style='color:#888;font-size:0.75rem;'>Logged in as:</div>"
@@ -264,7 +270,7 @@ def sidebar_nav():
             )
         if st.button("SIGN OUT", use_container_width=True):
             st.session_state.clear()
-            st.switch_page("app.py")
+            st.switch_page("Home.py")
 
 
 def testimonial(quote: str, attribution: str):

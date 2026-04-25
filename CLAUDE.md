@@ -43,7 +43,7 @@ ruff format .
 
 ```
 frontend/        Streamlit multipage app
-  app.py         Login/landing page (unauthenticated entry point)
+  Home.py        Login/landing page (unauthenticated entry point)
   api_client.py  All HTTP calls to the Rust API
   theme.py       CSS injection + infomercial UI helpers
   pages/

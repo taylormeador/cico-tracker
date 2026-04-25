@@ -1,44 +1,35 @@
-use axum::{routing::get, Router};
-use sqlx::{PgPool, postgres::PgPoolOptions};
+mod auth;
+mod db;
+mod error;
+mod models;
+
+use axum::Router;
 use dotenvy::dotenv;
 use std::env;
 
-#[derive(Debug)]
-struct User {
-    id: i64,
-    email: String,
-    password_hash: String,
-    created_at: chrono::DateTime<chrono::Utc>,
-}
-
-async fn get_users(pool: &PgPool) -> Result<Vec<User>, sqlx::Error> {
-    let users = sqlx::query_as!(
-        User,
-        r#"SELECT id, email, password_hash, created_at FROM users"#
-    )
-    .fetch_all(pool)
-    .await?;
-
-    Ok(users)
+#[derive(Clone)]
+pub struct AppState {
+    pub db: sqlx::PgPool,
+    pub jwt_secret: String,
 }
 
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    println!("welcome to CICO backend");
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let pool = PgPoolOptions::new()
-        .connect(&database_url)
-        .await
-        .expect("failed to connect to database");
+    let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
 
+    let db = db::create_pool(&database_url).await;
     println!("connected to database");
 
+    let state = AppState { db, jwt_secret };
+
     let app = Router::new()
-        .route("/", get(|| async { "Hello, World!" }))
-        .with_state(pool);
+        .nest("/auth", auth::router())
+        .with_state(state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
+    println!("listening on 0.0.0.0:8080");
     axum::serve(listener, app).await.unwrap();
 }
