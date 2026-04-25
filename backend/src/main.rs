@@ -33,6 +33,8 @@ async fn main() {
         .await
         .expect("failed to connect to database");
 
+    println!("connected to database");
+
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
         .with_state(pool);
